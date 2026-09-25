@@ -171,7 +171,7 @@ export function InteractiveMap({
       `}</style>
 
       <div className="mb-4">
-        <h3 className="text-xl font-semibold text-zinc-900">Where you'll be</h3>
+        <h3 className="text-xl font-semibold text-zinc-900">Where you&apos;ll be</h3>
         <p className="text-sm text-zinc-600 mt-1">
           {city}, {country}
         </p>

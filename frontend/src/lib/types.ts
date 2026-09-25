@@ -70,7 +70,7 @@ export interface ListingCreateInput {
   amenity_ids: number[];
 }
 
-export interface ListingUpdateInput extends Partial<ListingCreateInput> {}
+export type ListingUpdateInput = Partial<ListingCreateInput>;
 
 export interface ListingPagination {
   items: ListingCard[];

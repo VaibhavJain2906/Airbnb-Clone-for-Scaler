@@ -143,7 +143,7 @@ export function BookingWidget({
       </Button>
 
       <p className="text-center text-xs text-zinc-500 font-medium">
-        You won't be charged yet
+        You won&apos;t be charged yet
       </p>
 
       {/* Price Quote Breakdown */}

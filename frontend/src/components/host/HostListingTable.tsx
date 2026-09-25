@@ -39,7 +39,7 @@ export function HostListingTable({ listings, onRefresh }: HostListingTableProps)
   if (!listings || listings.length === 0) {
     return (
       <div className="py-12 text-center text-sm text-zinc-500">
-        You haven't created any listings yet.
+        You haven&apos;t created any listings yet.
       </div>
     );
   }
@@ -139,7 +139,7 @@ export function HostListingTable({ listings, onRefresh }: HostListingTableProps)
             <AlertTriangle className="w-5 h-5 shrink-0" />
             <span>
               Are you sure you want to permanently delete{" "}
-              <strong>"{deletingListing?.title}"</strong>?
+              <strong>&ldquo;{deletingListing?.title}&rdquo;</strong>?
             </span>
           </div>
 
