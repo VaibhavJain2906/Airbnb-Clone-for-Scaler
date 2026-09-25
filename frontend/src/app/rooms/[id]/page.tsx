@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, Suspense } from "react";
+import dynamic from "next/dynamic";
 import { useParams, useSearchParams } from "next/navigation";
 import { Star, Share2, Award, ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -10,11 +11,23 @@ import { PhotoGallery } from "../../../components/listing-detail/PhotoGallery";
 import { HostCard } from "../../../components/listing-detail/HostCard";
 import { AmenitiesList } from "../../../components/listing-detail/AmenitiesList";
 import { ReviewsSection } from "../../../components/listing-detail/ReviewsSection";
-import { StaticMap } from "../../../components/listing-detail/StaticMap";
+import { WriteReviewModal } from "../../../components/listing-detail/WriteReviewModal";
 import { BookingWidget } from "../../../components/booking/BookingWidget";
 import { HeartButton } from "../../../components/listings/HeartButton";
 import { Skeleton } from "../../../components/ui/Skeleton";
 import { useToast } from "../../../context/ToastContext";
+
+// Dynamically import InteractiveMap without SSR to support Leaflet in Next.js
+const InteractiveMap = dynamic(
+  () =>
+    import("../../../components/listing-detail/InteractiveMap").then(
+      (mod) => mod.InteractiveMap
+    ),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="w-full h-96 rounded-3xl" />,
+  }
+);
 
 function RoomDetailContent() {
   const params = useParams();
@@ -29,6 +42,7 @@ function RoomDetailContent() {
   const [listing, setListing] = useState<ListingDetail | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isWriteReviewOpen, setIsWriteReviewOpen] = useState(false);
 
   useEffect(() => {
     if (!listingId) return;
@@ -55,6 +69,20 @@ function RoomDetailContent() {
     if (typeof window !== "undefined") {
       navigator.clipboard.writeText(window.location.href);
       showToast("Listing link copied to clipboard!", "success");
+    }
+  };
+
+  const handleReviewSubmitted = (newReview: Review) => {
+    setReviews((prev) => [newReview, ...prev]);
+    if (listing) {
+      const newCount = listing.review_count + 1;
+      const currentTotal = (listing.average_rating || 5) * listing.review_count;
+      const newAvg = Number(((currentTotal + newReview.rating) / newCount).toFixed(2));
+      setListing({
+        ...listing,
+        review_count: newCount,
+        average_rating: newAvg,
+      });
     }
   };
 
@@ -109,13 +137,13 @@ function RoomDetailContent() {
         <div className="flex flex-wrap items-center justify-between gap-4 text-xs sm:text-sm font-semibold text-zinc-900">
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
-              <Star className="w-4 h-4 fill-current text-zinc-900" />
+              <Star className="w-4 h-4 fill-[#FF385C] text-[#FF385C]" />
               <span>{listing.average_rating ? listing.average_rating.toFixed(2) : "New"}</span>
             </div>
             <span className="text-zinc-400">·</span>
-            <span className="underline font-normal text-zinc-600">
+            <a href="#reviews" className="underline font-normal text-zinc-600 hover:text-zinc-900">
               {listing.review_count} review{listing.review_count !== 1 ? "s" : ""}
-            </span>
+            </a>
             {listing.host.is_superhost && (
               <>
                 <span className="text-zinc-400">·</span>
@@ -187,14 +215,16 @@ function RoomDetailContent() {
             reviews={reviews}
             averageRating={listing.average_rating}
             reviewCount={listing.review_count}
+            onOpenWriteReview={() => setIsWriteReviewOpen(true)}
           />
 
-          {/* Location Map */}
-          <StaticMap
+          {/* Interactive OpenStreetMap Location Map */}
+          <InteractiveMap
             city={listing.city}
             country={listing.country}
             lat={listing.lat}
             lng={listing.lng}
+            title={listing.title}
           />
         </div>
 
@@ -208,6 +238,15 @@ function RoomDetailContent() {
           />
         </div>
       </div>
+
+      {/* Write a Review Modal */}
+      <WriteReviewModal
+        isOpen={isWriteReviewOpen}
+        onClose={() => setIsWriteReviewOpen(false)}
+        listingId={listing.id}
+        listingTitle={listing.title}
+        onReviewSubmitted={handleReviewSubmitted}
+      />
     </div>
   );
 }

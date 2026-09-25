@@ -23,7 +23,7 @@ class Booking(Base):
     check_out = Column(Date, nullable=False, index=True)
     guests = Column(Integer, nullable=False, default=1)
 
-    # Immutable Price Snapshot
+    # Save the original price snapshot so past bookings remain unchanged when listing rates change.
     nightly_price = Column(Float, nullable=False)
     nights = Column(Integer, nullable=False)
     cleaning_fee = Column(Float, nullable=False, default=0.0)

@@ -14,15 +14,16 @@ import {
   ReviewCreateInput,
   HostDashboardData,
   ListingCard,
+  SearchFilters,
 } from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 class ApiError extends Error {
   status: number;
-  data: any;
+  data: unknown;
 
-  constructor(message: string, status: number, data?: any) {
+  constructor(message: string, status: number, data?: unknown) {
     super(message);
     this.name = "ApiError";
     this.status = status;
@@ -30,10 +31,12 @@ class ApiError extends Error {
   }
 }
 
+// Centralized request wrapper with mock auth injection.
+// Automatically adds the active user's ID to the X-User-Id header so the backend knows who is making the request.
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
 
-  // Get active mock user ID from localStorage if in browser
+  // Default to Sarah Jenkins (user ID 7, standard guest) if not explicitly set
   let userId = "7";
   if (typeof window !== "undefined") {
     userId = localStorage.getItem("airbnb_user_id") || "7";
@@ -69,7 +72,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
 export const api = {
   listings: {
-    search: (params: Record<string, any> = {}): Promise<ListingPagination> => {
+    search: (params: SearchFilters | Record<string, string | number | boolean | undefined | null> = {}): Promise<ListingPagination> => {
       const searchParams = new URLSearchParams();
       Object.entries(params).forEach(([key, val]) => {
         if (val !== undefined && val !== null && val !== "") {
@@ -171,6 +174,12 @@ export const api = {
 
     becomeHost: (): Promise<User> => {
       return request<User>("/users/become-host", {
+        method: "POST",
+      });
+    },
+
+    revertGuest: (): Promise<User> => {
+      return request<User>("/users/revert-guest", {
         method: "POST",
       });
     },

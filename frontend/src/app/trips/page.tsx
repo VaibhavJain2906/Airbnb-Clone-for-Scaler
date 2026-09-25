@@ -132,6 +132,9 @@ export default function MyTripsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {displayedTrips.map((booking) => {
             const isCancelled = booking.status === "cancelled";
+            const isCompleted =
+              booking.status === "completed" || (!isCancelled && booking.check_out < todayStr);
+
             return (
               <div
                 key={booking.id}
@@ -148,15 +151,20 @@ export default function MyTripsPage() {
                       />
                     )}
                     <div className="absolute top-3 right-3">
-                      <span
-                        className={`px-2.5 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider shadow-xs ${
-                          isCancelled
-                            ? "bg-rose-100 text-rose-800"
-                            : "bg-emerald-100 text-emerald-800"
-                        }`}
-                      >
-                        {booking.status}
-                      </span>
+                      {isCancelled ? (
+                        <span className="px-2.5 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider shadow-xs bg-rose-100 text-rose-800 ring-1 ring-rose-300">
+                          Cancelled
+                        </span>
+                      ) : isCompleted ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider shadow-xs bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 inline-block animate-pulse"></span>
+                          Completed
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider shadow-xs bg-blue-100 text-blue-800 ring-1 ring-blue-300">
+                          Confirmed
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -194,7 +202,16 @@ export default function MyTripsPage() {
                     View Listing
                   </Link>
 
-                  {!isCancelled && (
+                  {isCompleted && (
+                    <Link
+                      href={`/rooms/${booking.listing_id}#reviews`}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900 text-white hover:bg-zinc-800 transition-colors shadow-xs"
+                    >
+                      Write Review
+                    </Link>
+                  )}
+
+                  {!isCancelled && !isCompleted && (
                     <Button
                       variant="outline"
                       size="sm"

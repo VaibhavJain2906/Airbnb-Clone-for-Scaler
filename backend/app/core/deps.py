@@ -11,7 +11,8 @@ def get_current_user(
 ) -> User:
     """
     Mock authentication dependency.
-    Extracts user ID from the 'X-User-Id' HTTP header.
+    Extracts the user ID from the 'X-User-Id' HTTP header sent by the frontend user-switcher.
+    This allows testing different guest and host personas instantly without full OAuth/JWT overhead.
     Defaults to Sarah Jenkins (id=7, standard guest user) if header is omitted or invalid.
     """
     user_id = 7  # default fallback mock user

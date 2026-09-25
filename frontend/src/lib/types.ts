@@ -111,7 +111,7 @@ export interface Booking {
   cleaning_fee: number;
   service_fee: number;
   total_price: number;
-  status: "confirmed" | "cancelled";
+  status: "confirmed" | "cancelled" | "completed" | string;
   created_at: string;
 }
 
@@ -129,13 +129,24 @@ export interface Review {
   author_name: string;
   author_avatar?: string | null;
   rating: number;
+  cleanliness?: number;
+  accuracy?: number;
+  communication?: number;
+  location?: number;
+  value?: number;
   comment: string;
   created_at: string;
 }
 
 export interface ReviewCreateInput {
-  booking_id: number;
+  listing_id: number;
+  booking_id?: number;
   rating: number;
+  cleanliness?: number;
+  accuracy?: number;
+  communication?: number;
+  location?: number;
+  value?: number;
   comment: string;
 }
 

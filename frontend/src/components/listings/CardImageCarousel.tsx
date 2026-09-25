@@ -41,6 +41,13 @@ export function CardImageCarousel({ images, title }: CardImageCarouselProps) {
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
         className="object-cover transition-transform duration-500 group-hover:scale-105"
         priority={false}
+        onError={(e) => {
+          // Fallback to high-res reliable photo on network failure
+          const target = e.target as HTMLImageElement;
+          if (target) {
+            target.src = "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80";
+          }
+        }}
       />
 
       {/* Navigation Arrows (Visible on Group Hover) */}

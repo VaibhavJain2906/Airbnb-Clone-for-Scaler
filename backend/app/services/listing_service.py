@@ -17,16 +17,21 @@ from app.schemas.listing import (
 from app.schemas.user import UserBrief
 
 
-def get_listing_card_dto(listing: Listing, db: Session) -> ListingCard:
-    """Helper to convert a Listing model into a rich ListingCard DTO with ratings and images."""
-    # Rating aggregation
+def _calculate_listing_rating(listing_id: int, db: Session) -> tuple[Optional[float], int]:
+    """Calculate average rating and review count for a listing."""
     rating_data = (
         db.query(func.avg(Review.rating), func.count(Review.id))
-        .filter(Review.listing_id == listing.id)
+        .filter(Review.listing_id == listing_id)
         .first()
     )
     avg_rating = round(float(rating_data[0]), 2) if rating_data and rating_data[0] else None
     review_count = int(rating_data[1]) if rating_data and rating_data[1] else 0
+    return avg_rating, review_count
+
+
+def get_listing_card_dto(listing: Listing, db: Session) -> ListingCard:
+    """Helper to convert a Listing model into a rich ListingCard DTO with ratings and images."""
+    avg_rating, review_count = _calculate_listing_rating(listing.id, db)
 
     # Ordered images (fallback if none)
     image_urls = [img.url for img in listing.images] if listing.images else [
@@ -111,7 +116,8 @@ def search_listings(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Check-out date must be strictly after check-in date.",
             )
-        # Subquery: find listing_ids that have confirmed bookings overlapping [check_in, check_out)
+        # Two bookings overlap when one starts before the other ends and ends after the other starts.
+        # Check-out is exclusive, so leaving on this date makes it available to the next guest.
         overlapping_listings_subquery = (
             db.query(Booking.listing_id)
             .filter(
@@ -159,13 +165,7 @@ def get_listing_detail(listing_id: int, db: Session) -> ListingDetail:
         )
 
     # Rating metrics
-    rating_data = (
-        db.query(func.avg(Review.rating), func.count(Review.id))
-        .filter(Review.listing_id == listing.id)
-        .first()
-    )
-    avg_rating = round(float(rating_data[0]), 2) if rating_data and rating_data[0] else None
-    review_count = int(rating_data[1]) if rating_data and rating_data[1] else 0
+    avg_rating, review_count = _calculate_listing_rating(listing.id, db)
 
     image_urls = [img.url for img in listing.images] if listing.images else [
         "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80"

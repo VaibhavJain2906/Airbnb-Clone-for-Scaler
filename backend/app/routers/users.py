@@ -31,3 +31,15 @@ def become_host(
     db.commit()
     db.refresh(current_user)
     return current_user
+
+
+@router.post("/revert-guest", response_model=UserRead)
+def revert_guest(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Revert current user back to a guest role."""
+    current_user.is_host = False
+    db.commit()
+    db.refresh(current_user)
+    return current_user

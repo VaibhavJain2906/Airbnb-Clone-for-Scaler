@@ -52,7 +52,9 @@ def create_booking(
         )
 
     # 4. Strict Overlap Check inside database transaction
-    # Overlap formula: existing.check_in < requested.check_out AND existing.check_out > requested.check_in
+    # Two bookings overlap when one starts before the other ends and ends after the other starts.
+    # Check-out is exclusive, so leaving on this date makes it available to the next guest.
+    # Cancelled bookings do not block dates; only confirmed bookings prevent overlap.
     overlapping = (
         db.query(Booking)
         .filter(
@@ -71,6 +73,7 @@ def create_booking(
         )
 
     # 5. Calculate pricing snapshot
+    # Save the original price snapshot so past bookings remain unchanged when listing rates change.
     quote = calculate_price_quote(
         nightly_price=listing.price_per_night,
         cleaning_fee=listing.cleaning_fee,
@@ -131,8 +134,13 @@ def get_user_trips(guest: User, db: Session) -> List[BookingRead]:
     )
 
     result = []
+    today = date.today()
     for b in bookings:
         cover_image = b.listing.images[0].url if b.listing and b.listing.images else None
+        status_val = b.status
+        if status_val == "confirmed" and b.check_out < today:
+            status_val = "completed"
+
         result.append(
             BookingRead(
                 id=b.id,
@@ -151,7 +159,7 @@ def get_user_trips(guest: User, db: Session) -> List[BookingRead]:
                 cleaning_fee=b.cleaning_fee,
                 service_fee=b.service_fee,
                 total_price=b.total_price,
-                status=b.status,
+                status=status_val,
                 created_at=b.created_at,
             )
         )

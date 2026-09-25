@@ -6,9 +6,20 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
+/**
+ * Safely parse a date string that may be date-only ("2026-09-25")
+ * or a full ISO datetime ("2026-09-25T16:40:27"). Always returns
+ * a Date at midnight local time for the given calendar date.
+ */
+function parseDate(s: string): Date {
+  // Take only the "YYYY-MM-DD" portion (first 10 chars)
+  const dateOnly = s.includes("T") ? s.split("T")[0] : s;
+  return new Date(dateOnly + "T00:00:00");
+}
+
 export function formatDate(dateString: string): string {
   if (!dateString) return "";
-  const d = new Date(dateString + "T00:00:00");
+  const d = parseDate(dateString);
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
@@ -18,8 +29,8 @@ export function formatDate(dateString: string): string {
 
 export function formatDateRange(checkIn: string, checkOut: string): string {
   if (!checkIn || !checkOut) return "";
-  const d1 = new Date(checkIn + "T00:00:00");
-  const d2 = new Date(checkOut + "T00:00:00");
+  const d1 = parseDate(checkIn);
+  const d2 = parseDate(checkOut);
 
   const m1 = d1.toLocaleDateString("en-US", { month: "short" });
   const m2 = d2.toLocaleDateString("en-US", { month: "short" });
@@ -37,8 +48,8 @@ export function formatDateRange(checkIn: string, checkOut: string): string {
 
 export function calculateNights(checkIn: string, checkOut: string): number {
   if (!checkIn || !checkOut) return 0;
-  const d1 = new Date(checkIn + "T00:00:00");
-  const d2 = new Date(checkOut + "T00:00:00");
+  const d1 = parseDate(checkIn);
+  const d2 = parseDate(checkOut);
   const diffTime = d2.getTime() - d1.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return diffDays > 0 ? diffDays : 0;
