@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import (
     Column,
     Integer,
@@ -77,7 +77,7 @@ class Listing(Base):
     bedrooms = Column(Integer, nullable=False, default=1)
     beds = Column(Integer, nullable=False, default=1)
     bathrooms = Column(Float, nullable=False, default=1.0)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
     # Relationships
     host = relationship("User", back_populates="listings")

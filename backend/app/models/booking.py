@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import (
     Column,
     Integer,
@@ -32,7 +32,7 @@ class Booking(Base):
 
     # Status: 'confirmed' or 'cancelled'
     status = Column(String(20), nullable=False, default="confirmed", index=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
     # Relationships
     listing = relationship("Listing", back_populates="bookings")
