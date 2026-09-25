@@ -423,9 +423,3 @@ The application is deployed live and fully functional:
 ### Deployment Configuration
 * **Frontend**: Hosted on Vercel with automatic Next.js build optimization. Configured with the production environment variable `NEXT_PUBLIC_API_URL=https://airbnb-clone-for-scaler-production.up.railway.app/api`.
 * **Backend**: Hosted as a containerized web service on Railway running Uvicorn. Configured with CORS enabled for the production Vercel domain. Database is initialized and seeded automatically during cold start.
-
----
-
-## Project Status
-
-Completed and verified as a full-stack Airbnb marketplace for the SDE Fullstack assessment. All core guest workflows, host management features, database schemas, and integration test suites are implemented and validated.
